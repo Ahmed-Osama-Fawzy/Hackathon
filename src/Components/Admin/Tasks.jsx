@@ -1,10 +1,11 @@
 import { useRef, useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { getRoleFromToken } from './RoleExtraction';
+import { getRoleFromToken } from '../RoleExtraction';
 import { toast } from 'react-toastify';
-import api from './JWT';
+import api from '../JWT';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPenToSquare, faTrash, faFolderPlus, faFileImport } from "@fortawesome/free-solid-svg-icons";
+// import { faPenToSquare, faTrash, faFolderPlus, faFileImport } from "@fortawesome/free-solid-svg-icons";
+import { faPenToSquare, faTrash, faFolderPlus } from "@fortawesome/free-solid-svg-icons";
 import * as bootstrap from 'bootstrap';
 
 const Tasks = () => {
@@ -112,6 +113,8 @@ const Tasks = () => {
         fetchTasksList();
         toast.success(Message || (Insert ? "Task inserted" : "Task modified"));
         bootstrap.Modal.getOrCreateInstance(document.getElementById("taskModal")).hide();
+        document.body.classList.remove('modal-open');
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
       } else {
         toast[Status === "Warning" ? "warn" : "error"](Message || "Error Message");
       }
@@ -157,9 +160,9 @@ const Tasks = () => {
           <button className='btn btn-primary me-2' onClick={() => HandlePopUp("Insert")} data-bs-toggle="modal" data-bs-target="#taskModal">
             <FontAwesomeIcon icon={faFolderPlus} />
           </button>
-          <button className='btn btn-primary' onClick={() => HandlePopUp("InsertFile")} data-bs-toggle="modal" data-bs-target="#excelModal">
+          {/* <button className='btn btn-primary' onClick={() => HandlePopUp("InsertFile")} data-bs-toggle="modal" data-bs-target="#excelModal">
             <FontAwesomeIcon icon={faFileImport} />
-          </button>
+          </button> */}
         </span>
       </div>
 
@@ -169,7 +172,7 @@ const Tasks = () => {
           <table className="table table-bordered table-hover align-middle">
             <thead className="table-light">
               <tr>
-                <th>ID</th><th>Category</th><th>Section</th><th>Code</th><th>Disease</th><th>Datasets</th><th>Actions</th>
+                <th>ID</th><th>Category</th><th>Section</th><th>Code</th><th>Disease</th><th>Datasets</th><th>Status</th><th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -180,9 +183,12 @@ const Tasks = () => {
                   <td>{acc.Section}</td>
                   <td>{acc.Code}</td>
                   <td>{acc.Disease}</td>
-                  <td>{acc.Datasets.map((item, idx) => (
-                    <a key={idx} href={item} target="_blank" rel="noreferrer" className='btn btn-sm btn-primary'> Dataset {idx + 1} </a>
-                  ))}</td>
+                  <td>
+                    {acc.Datasets.map((item, idx) => (
+                      <a key={idx} href={item} target="_blank" rel="noreferrer" className='btn btn-sm btn-primary'> Dataset {idx + 1} </a>
+                    ))}
+                  </td>
+                  <td>{acc.Status}</td>
                   <td className="d-flex justify-content-center gap-2">
                     <button className="btn btn-sm btn-primary" onClick={() => HandlePopUp("Modify", acc.Id, acc.Category, acc.Section, acc.Code, acc.Disease, acc.Datasets)} data-bs-toggle="modal" data-bs-target="#taskModal">
                       <FontAwesomeIcon icon={faPenToSquare} />

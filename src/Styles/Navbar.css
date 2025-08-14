@@ -1,0 +1,58 @@
+.imaginary-navbar {
+    width: 5rem;
+    height: 100vh;
+    background: var(--main-blue-color) !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding-top: 1rem;
+    box-shadow: rgba(0, 0, 0, 0.25) 0 4px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-right: var(--header-style) !important;
+}
+
+.imaginary-navbar .brand {
+    color: var(--background-color) !important;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+.imaginary-navbar .brand:hover {
+    transform: rotate(15deg) scale(1.1);
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.nav-link {
+    color: var(--background-color) !important;
+    font-size: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--circle);
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    background-color: var(--blue-color) !important;
+    box-shadow: 0 0 15px var(--blue-color) !important;
+    transform: scale(1.1);
+}
+
+.nav-link.active {
+    background-color: var(--red-color) !important;
+    box-shadow: 0 0 15px var(--red-color) !important;
+}

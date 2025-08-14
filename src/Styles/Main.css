@@ -5,7 +5,7 @@
     --blue-color: #669BBC;
     --background-color: #f1ebdd;
     --border-radius: 10px;
-    --box-shadow: var(--background-color) 15px 15px 15px;
+    --box-shadow: rgba(0,0,0,.08) 0 20px 40px;
     --header-style: var(--main-blue-color) 3px solid;
     --circle: 100%;
 }

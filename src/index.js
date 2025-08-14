@@ -16,7 +16,8 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
   <React.StrictMode>
-    <ToastContainer position='top-right' autoClose={3000}/>
+    <span id='poweredby'> <i className="bi bi-stars"></i> Powered by <a href="https://ahmed-osama.vercel.app/" target="_blank" rel="noreferrer">Eng.Ahmed Osama</a></span>
+    <ToastContainer position='bottom-right' autoClose={2000}/>
     <App />
   </React.StrictMode>
 );
