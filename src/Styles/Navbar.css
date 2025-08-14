@@ -1,11 +1,13 @@
 .imaginary-navbar {
     width: 5rem;
-    height: 100vh;
+    height: 96vh;
+    margin: auto;
     background: var(--main-blue-color) !important;
     position: fixed;
-    top: 0;
-    left: 0;
-    padding-top: 1rem;
+    top: 2%;
+    left: 5px;
+    border-radius: 10px;
+    padding: 1rem;
     box-shadow: rgba(0, 0, 0, 0.25) 0 4px 12px;
     display: flex;
     flex-direction: column;
