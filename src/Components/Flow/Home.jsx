@@ -1,8 +1,13 @@
 import { Link } from "react-router-dom";
 import '../../Styles/Home.css';
 import Footer from "./Footer";
+import { useEffect } from "react";
 
 const Home = () => {
+  useEffect(() => {
+    localStorage.clear()
+  }, [])
+  
   return (
     <main className="home">
       {/* Hero */}

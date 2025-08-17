@@ -48,6 +48,7 @@ const Dashboard = () => {
           Section: datum.Section,
           Disease: datum.Disease,
           Code: datum.Code,
+          Status: datum.Status,
           Datasets: datum.Datasets
         }));
 

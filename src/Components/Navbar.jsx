@@ -19,38 +19,28 @@ const Navbar = () => {
       <ul className="nav-list">
         {/* Brand / Logo */}
         <li className="nav-item">
-          <Link
-            to="/Dashboard"
-            replace
-            className="nav-link"
-            title="Dashboard"
-          >
+          <Link to="/Dashboard" replace className="nav-link" title="Dashboard">
             <i className={`bi bi-speedometer2`}></i>
           </Link>
         </li>
+
         {navItems
           .filter(item => item.roles.includes(CurrentRole))
           .map(({ title, url, icon }, idx) => (
             <li key={idx} className="nav-item">
-              <Link
-                to={url}
-                replace
-                className="nav-link"
-                title={title}
-              >
+              <Link to={url} replace className="nav-link" title={title}>
                 <i className={`bi ${icon}`}></i>
               </Link>
             </li>
           ))}
+
+        {/* Logout at bottom */}
+        <li className="nav-item logout-item">
+          <Link to="/" replace className="nav-link" title="LogOut">
+            <FontAwesomeIcon className="bi" icon={faRightFromBracket} />
+          </Link>
+        </li>
       </ul>
-      <Link
-        to="/"
-        replace
-        className="nav-link"
-        title="LogOut"
-      >
-        <FontAwesomeIcon className='bi' icon={faRightFromBracket} />
-      </Link>
     </div>
   );
 };

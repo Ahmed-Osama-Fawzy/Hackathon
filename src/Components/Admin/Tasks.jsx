@@ -2,11 +2,12 @@ import { useRef, useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { getRoleFromToken } from '../RoleExtraction';
 import { toast } from 'react-toastify';
+import Loader from '../Loader';
 import api from '../JWT';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// import { faPenToSquare, faTrash, faFolderPlus, faFileImport } from "@fortawesome/free-solid-svg-icons";
-import { faPenToSquare, faTrash, faFolderPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPenToSquare, faTrash, faFolderPlus, faFileImport } from "@fortawesome/free-solid-svg-icons";
 import * as bootstrap from 'bootstrap';
+import * as XLSX from "xlsx";
 
 const Tasks = () => {
   const CurrentRole = getRoleFromToken();
@@ -14,11 +15,13 @@ const Tasks = () => {
   const [TasksCount, UpdateTasksCount] = useState(0);
   const [TaskInfo, UpdateTaskInfo] = useState({ Category: "", Section: "", Code: "", Disease: "", Datasets: ["", "", ""] });
   const [TaskId, UpdateTaskId] = useState(null);
-  // const [ExcelFile, setExcelFile] = useState(null);
+  const [ExcelFile, setExcelFile] = useState(null);
   const hasFetched = useRef(false);
+  const [Loading, setLoading] = useState(false);
 
   const fetchTasksList = async () => {
     try {
+      setLoading(true);
       const res = await api.get("/GetAllTasks");
       const { Data, Status, Message } = res.data;
 
@@ -29,6 +32,7 @@ const Tasks = () => {
           Section: datum.Section,
           Disease: datum.Disease,
           Code: datum.Code,
+          Status: datum.Status,
           Datasets: datum.Datasets
         }));
         UpdateTasksList(NewData || []);
@@ -40,6 +44,7 @@ const Tasks = () => {
     } catch (err) {
       toast.error(err.response?.data?.Message || err.message);
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -55,22 +60,22 @@ const Tasks = () => {
       document.getElementById("TaskModalButton").innerHTML = "Insert";
       UpdateTaskInfo({ Category: "", Section: "", Disease: "", Code: "", Datasets: ["", "", ""] });
       UpdateTaskId(null);
+    
     } else if (Action === "Modify") {
       document.getElementById("TaskModalLabel").innerHTML = "Modify Existing Task";
       document.getElementById("TaskModalButton").innerHTML = "Modify";
       UpdateTaskInfo({ Category, Section, Disease, Code, Datasets: Dataset });
       UpdateTaskId(Id);
-    } 
-    // else if (Action === "InsertFile") {
-    //   document.getElementById("ExcelModalLabel").innerHTML = "Upload Excel File";
-    //   document.getElementById("ExcelModalButton").innerHTML = "Upload";
-    //   setExcelFile(null);
-    // }
+    
+    } else if (Action === "InsertFile") { // ⚡ Excel popup
+      document.getElementById("ExcelModalLabel").innerHTML = "Upload Excel File";
+      document.getElementById("ExcelModalButton").innerHTML = "Upload";
+      setExcelFile(null);
+    }
   };
 
   const ChangeHandler = (e) => {
-    const { name, value } = e.target;
-    // const { name, value, files } = e.target;
+    const { name, value, files } = e.target;
     if (name.startsWith("Dataset")) {
       const index = parseInt(name.replace("Dataset", "")) - 1;
       UpdateTaskInfo(prev => {
@@ -78,16 +83,15 @@ const Tasks = () => {
         newDatasets[index] = value;
         return { ...prev, Datasets: newDatasets };
       });
-    } 
-    // else if (name === "Sheet") {
-    //   setExcelFile(files[0]);
-    // } 
-    else {
+    } else if (name === "Sheet") {
+      setExcelFile(files[0]);
+    } else {
       UpdateTaskInfo(prev => ({ ...prev, [name]: value }));
     }
   };
 
   const HandleRemove = async (Id) => {
+    setLoading(true);
     if (!Id) return toast.error("No Id Selected");
     try {
       const res = await api.post("/DeleteTask", { Id });
@@ -101,10 +105,12 @@ const Tasks = () => {
     } catch (err) {
       toast.error(err.response?.data?.Message || err.message);
     }
+    setLoading(false);
   };
 
   const HandleSubmitTask = async (e) => {
     e.preventDefault();
+    setLoading(true);
     const Insert = TaskId === null;
     try {
       const res = await api.post(Insert ? "/InsertTask" : "/ModifyTask", Insert ? TaskInfo : { Id: TaskId, ...TaskInfo });
@@ -121,28 +127,45 @@ const Tasks = () => {
     } catch (err) {
       toast.error(err.response?.data?.Message || err.message);
     }
+    setLoading(false);
   };
 
-  // const HandleSubmitExcel = async (e) => {
-  //   e.preventDefault();
-  //   if (!ExcelFile) return toast.error("Please select a file");
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("Sheet", ExcelFile);
-  //     toast.info("File Uploded")
-  //     const res = await api.post("/UploadExcel", formData, { headers: { "Content-Type": "multipart/form-data" } });
-  //     const { Status, Message } = res.data;
-  //     if (Status === "Success") {
-  //       fetchTasksList();
-  //       toast.success(Message || "Excel uploaded successfully");
-  //       bootstrap.Modal.getOrCreateInstance(document.getElementById("excelModal")).hide();
-  //     } else {
-  //       toast[Status === "Warning" ? "warn" : "error"](Message || "Error uploading file");
-  //     }
-  //   } catch (err) {
-  //     toast.error(err.response?.data?.Message || err.message);
-  //   }
-  // };
+  const HandleSubmitExcel = async (e) => {
+    setLoading(true);
+    e.preventDefault();
+    if (!ExcelFile) return toast.error("Please select a file");
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const binaryStr = event.target.result;
+        const workbook = XLSX.read(binaryStr, { type: "binary" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const sheetData = XLSX.utils.sheet_to_json(sheet);
+
+        // Loop through rows and insert
+        for (let row of sheetData) {
+          const newTask = {
+            Category: row.Category || "",
+            Section: row.Section || "",
+            Code: row.Code || "",
+            Disease: row.Disease || "",
+            Datasets: [row.Dataset1 || "", row.Dataset2 || "", row.Dataset3 || ""]
+          };
+          await api.post("/InsertTask", newTask);
+        }
+
+        fetchTasksList();
+        toast.success("Excel imported successfully");
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("excelModal")).hide();
+      } catch (err) {
+        toast.error(err.message || "Error parsing Excel");
+      }
+    };
+    setLoading(false);
+    reader.readAsBinaryString(ExcelFile);
+  };
 
   if (CurrentRole !== "Admin") {
     toast.error("This account cannot access this page");
@@ -151,6 +174,7 @@ const Tasks = () => {
 
   return (
     <div className="container text-center mt-5">
+      {Loading && <Loader text="Fetching tasks..." />}
       <h1 className='main-header'>Tasks management</h1>
       <div className='m-4 d-flex justify-content-evenly align-items-center'>
         <button type="button" className="btn btn-primary">
@@ -160,9 +184,9 @@ const Tasks = () => {
           <button className='btn btn-primary me-2' onClick={() => HandlePopUp("Insert")} data-bs-toggle="modal" data-bs-target="#taskModal">
             <FontAwesomeIcon icon={faFolderPlus} />
           </button>
-          {/* <button className='btn btn-primary' onClick={() => HandlePopUp("InsertFile")} data-bs-toggle="modal" data-bs-target="#excelModal">
-            <FontAwesomeIcon icon={faFileImport} />
-          </button> */}
+          <button className='btn btn-primary' onClick={() => HandlePopUp("InsertFile")} data-bs-toggle="modal" data-bs-target="#excelModal">
+            <FontAwesomeIcon icon={faFileImport} /> {/* ⚡ new button */}
+          </button>
         </span>
       </div>
 
@@ -294,7 +318,7 @@ const Tasks = () => {
         </div>
       </div>
 
-      {/* <div className="modal fade" id="excelModal" tabIndex="-1">
+      <div className="modal fade" id="excelModal" tabIndex="-1">
         <div className="modal-dialog">
           <form onSubmit={HandleSubmitExcel} className="modal-content">
             <div className="modal-header">
@@ -310,7 +334,7 @@ const Tasks = () => {
             </div>
           </form>
         </div>
-      </div> */}
+      </div>
     </div>
   );
 };
