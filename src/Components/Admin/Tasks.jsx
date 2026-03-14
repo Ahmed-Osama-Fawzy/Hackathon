@@ -164,7 +164,9 @@ const Tasks = () => {
 
           console.log(newTask);
 
-          await api.post("/InsertTask", newTask);
+          const res = await api.post("/InsertTask", newTask);
+          const { Status, Message } = res.data;
+          toast.success(Message);
         }
 
         fetchTasksList();
