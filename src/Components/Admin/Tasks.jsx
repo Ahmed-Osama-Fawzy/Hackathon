@@ -165,7 +165,7 @@ const Tasks = () => {
         const { Status, Message } = res.data;
         if (Status === "Success") {
           fetchTasksList();
-          toast.success(Message || (Insert ? "Tasks inserted"));
+          toast.success(Message || "Tasks inserted" )
         } else {
           toast[Status === "Warning" ? "warn" : "error"](Message || "Error Message");
         }
