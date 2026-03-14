@@ -129,44 +129,58 @@ const Tasks = () => {
     }
     setLoading(false);
   };
-
   const HandleSubmitExcel = async (e) => {
-    setLoading(true);
     e.preventDefault();
     if (!ExcelFile) return toast.error("Please select a file");
 
+    setLoading(true);
+
     const reader = new FileReader();
+
     reader.onload = async (event) => {
       try {
         const binaryStr = event.target.result;
         const workbook = XLSX.read(binaryStr, { type: "binary" });
+
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
+
         const sheetData = XLSX.utils.sheet_to_json(sheet);
 
-        console.log(sheetData)
+        console.log(sheetData);
 
-        // Loop through rows and insert
         for (let row of sheetData) {
           const newTask = {
             Category: row.Category || "",
             Section: row.Section || "",
             Code: row.Code || "",
             Disease: row.Disease || "",
-            Datasets: [row.Dataset1 || "", row.Dataset2 || "", row.Dataset3 || ""]
+            Datasets: [
+              row.Dataset1 || "",
+              row.Dataset2 || "",
+              row.Dataset3 || ""
+            ]
           };
-          console.log(newTask)
+
+          console.log(newTask);
+
           await api.post("/InsertTask", newTask);
         }
 
         fetchTasksList();
         toast.success("Excel imported successfully");
-        bootstrap.Modal.getOrCreateInstance(document.getElementById("excelModal")).hide();
+
+        bootstrap.Modal
+          .getOrCreateInstance(document.getElementById("excelModal"))
+          .hide();
+
       } catch (err) {
         toast.error(err.message || "Error parsing Excel");
+      } finally {
+        setLoading(false);
       }
     };
-    setLoading(false);
+
     reader.readAsBinaryString(ExcelFile);
   };
 
