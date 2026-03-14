@@ -144,6 +144,8 @@ const Tasks = () => {
         const sheet = workbook.Sheets[sheetName];
         const sheetData = XLSX.utils.sheet_to_json(sheet);
 
+        console.log(sheetData)
+
         // Loop through rows and insert
         for (let row of sheetData) {
           const newTask = {
