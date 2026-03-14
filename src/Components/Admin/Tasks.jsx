@@ -149,8 +149,7 @@ const Tasks = () => {
 
         console.log(sheetData);
 
-        for (let row of sheetData) {
-          const newTask = {
+        const tasks = sheetData.map(row => ({
             Category: row.Category || "",
             Section: row.Section || "",
             Code: row.Code || "",
@@ -160,21 +159,16 @@ const Tasks = () => {
               row.Dataset2 || "",
               row.Dataset3 || ""
             ]
-          };
+          }));
 
-          console.log(newTask);
-
-          const res = await api.post("/InsertTask", newTask);
-          const { Status, Message } = res.data;
-          toast.success(Message);
+        const res = await api.post("/InsertTasks", tasks);
+        const { Status, Message } = res.data;
+        if (Status === "Success") {
+          fetchTasksList();
+          toast.success(Message || (Insert ? "Tasks inserted"));
+        } else {
+          toast[Status === "Warning" ? "warn" : "error"](Message || "Error Message");
         }
-
-        fetchTasksList();
-        toast.success("Excel imported successfully");
-
-        bootstrap.Modal
-          .getOrCreateInstance(document.getElementById("excelModal"))
-          .hide();
 
       } catch (err) {
         toast.error(err.message || "Error parsing Excel");
