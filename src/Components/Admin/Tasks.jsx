@@ -155,6 +155,7 @@ const Tasks = () => {
             Disease: row.Disease || "",
             Datasets: [row.Dataset1 || "", row.Dataset2 || "", row.Dataset3 || ""]
           };
+          console.log(newTask)
           await api.post("/InsertTask", newTask);
         }
 
@@ -320,6 +321,7 @@ const Tasks = () => {
         </div>
       </div>
 
+      {/* Excel Modal */}
       <div className="modal fade" id="excelModal" tabIndex="-1">
         <div className="modal-dialog">
           <form onSubmit={HandleSubmitExcel} className="modal-content">
